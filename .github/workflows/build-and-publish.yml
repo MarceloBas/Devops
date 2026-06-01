@@ -1,0 +1,62 @@
+name: Build, SBOM, Sign & Push
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        run: |
+          docker build -t proyecto3-equipo3:local -f docker/Dockerfile .
+          docker tag proyecto3-equipo3:local localhost:5000/project3/equipo3:latest
+
+      - name: Push to local registry
+        run: |
+          docker push localhost:5000/project3/equipo3:latest
+
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM
+        run: |
+          mkdir -p sbom
+          syft localhost:5000/project3/equipo3:latest -o cyclonedx-json > sbom/image-cyclonedx.json
+
+      - name: Install cosign
+        run: |
+          curl -sSfL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 > cosign
+          chmod +x cosign
+          sudo mv cosign /usr/local/bin/
+
+      - name: Sign image
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          echo "${{ secrets.COSIGN_KEY }}" > cosign.key
+          echo "${{ secrets.COSIGN_PUB }}" > cosign.pub
+          cosign sign --key cosign.key localhost:5000/project3/equipo3:latest
+
+      - name: Verify signature
+        run: |
+          cosign verify --key cosign.pub localhost:5000/project3/equipo3:latest > cosign-verify.log || true
+          cat cosign-verify.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence
+          path: |
+            sbom/image-cyclonedx.json
+            cosign-verify.log
