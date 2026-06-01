@@ -34,7 +34,7 @@ jobs:
       - name: Generate SBOM
         run: |
           mkdir -p sbom
-          syft localhost:5000/project3/equipo3:latest -o cyclonedx-json > sbom/image-cyclonedx.json
+          syft docker.io/${{ secrets.DOCKERHUB_USERNAME }}/project3:latest -o cyclonedx-json > sbom/image-cyclonedx.json
 
       - name: Install cosign
         run: |
@@ -48,11 +48,11 @@ jobs:
         run: |
           echo "${{ secrets.COSIGN_KEY }}" > cosign.key
           echo "${{ secrets.COSIGN_PUB }}" > cosign.pub
-          cosign sign --key cosign.key localhost:5000/project3/equipo3:latest
+          cosign sign --key cosign.key docker.io/${{ secrets.DOCKERHUB_USERNAME }}/project3:latest
 
       - name: Verify signature
         run: |
-          cosign verify --key cosign.pub localhost:5000/project3/equipo3:latest > cosign-verify.log || true
+          cosign verify --key cosign.pub docker.io/${{ secrets.DOCKERHUB_USERNAME }}/project3:latest > cosign-verify.log || true
           cat cosign-verify.log
 
       - name: Upload artifacts
@@ -62,3 +62,4 @@ jobs:
           path: |
             sbom/image-cyclonedx.json
             cosign-verify.log
+
