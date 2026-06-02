@@ -46,6 +46,7 @@ jobs:
         curl -sSLf https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 > cosign
         chmod +x cosign
         sudo mv cosign /usr/local/bin/cosign
+        cosign version
 
     - name: Sign image
       run: |
