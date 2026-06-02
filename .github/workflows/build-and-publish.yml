@@ -48,16 +48,14 @@ jobs:
         sudo mv cosign /usr/local/bin/
 
     - name: Sign image
-      env:
-        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       run: |
         echo "${{ secrets.COSIGN_KEY }}" > cosign.key
         cosign sign --key cosign.key --tlog-upload=false ${{ env.DIGEST }}
-
+    
     - name: Verify signature
       run: |
         echo "${{ secrets.COSIGN_PUB }}" > cosign.pub
-        cosign verify --key cosign.pub ${{ env.DIGEST }} > cosign-verify.log
+        cosign verify --key cosign.pub --tlog-upload=false ${{ env.DIGEST }} > cosign-verify.log
         cat cosign-verify.log
 
     - name: Upload artifacts
