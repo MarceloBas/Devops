@@ -51,13 +51,14 @@ jobs:
     - name: Sign image
       run: |
         echo "${{ secrets.COSIGN_KEY }}" > cosign.key
-        cosign sign --key cosign.key --no-upload ${{ env.DIGEST }}
-
+        cosign sign --key cosign.key ${{ env.DIGEST }}
+    
     - name: Verify signature
       run: |
         echo "${{ secrets.COSIGN_PUB }}" > cosign.pub
-        cosign verify --key cosign.pub --no-upload ${{ env.DIGEST }} > cosign-verify.log
+        cosign verify --key cosign.pub ${{ env.DIGEST }} > cosign-verify.log
         cat cosign-verify.log
+
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
