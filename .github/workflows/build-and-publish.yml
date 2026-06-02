@@ -40,22 +40,22 @@ jobs:
     - name: Generate SBOM
       run: syft ${{ env.DIGEST }} -o cyclonedx-json > image-cyclonedx.json
 
-    - name: Install cosign
+    - name: Install cosign v2.2.3
       run: |
         COSIGN_VERSION=v2.2.3
         curl -sSLf https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 > cosign
         chmod +x cosign
-        sudo mv cosign /usr/local/bin/
+        sudo mv cosign /usr/local/bin/cosign
 
     - name: Sign image
       run: |
         echo "${{ secrets.COSIGN_KEY }}" > cosign.key
-        cosign sign --key cosign.key --yes ${{ env.DIGEST }}
-    
+        cosign sign --key cosign.key ${{ env.DIGEST }}
+
     - name: Verify signature
       run: |
         echo "${{ secrets.COSIGN_PUB }}" > cosign.pub
-        cosign verify --key cosign.pub --yes ${{ env.DIGEST }} > cosign-verify.log
+        cosign verify --key cosign.pub ${{ env.DIGEST }} > cosign-verify.log
         cat cosign-verify.log
 
     - name: Upload artifacts
