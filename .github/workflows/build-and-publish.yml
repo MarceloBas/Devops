@@ -52,7 +52,7 @@ jobs:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       run: |
         echo "${{ secrets.COSIGN_KEY }}" > cosign.key
-        cosign sign --key cosign.key ${{ env.DIGEST }}
+        cosign sign --key cosign.key --tlog-upload=false ${{ env.DIGEST }}
 
     - name: Verify signature
       run: |
