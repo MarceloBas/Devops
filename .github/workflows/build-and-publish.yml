@@ -23,7 +23,7 @@ jobs:
 
     - name: Build image
       run: |
-        docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/project3:latest .
+        docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/project3:latest -f ./docker/Dockerfile .
 
     - name: Push to Docker Hub
       run: |
