@@ -1,0 +1,33 @@
+name: Verify image signature
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/**'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cosign
+        run: |
+          curl -sSfL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
+          chmod +x cosign
+          sudo mv cosign /usr/local/bin/
+
+      - name: Prepare public key
+        env:
+          COSIGN_PUB_B64: ${{ secrets.COSIGN_PUB_B64 }}
+        run: |
+          echo "$COSIGN_PUB_B64" | base64 -d > cosign.pub
+          ls -l cosign.pub
+
+      - name: Verify image signature
+        env:
+          DIGEST: docker.io/marceft/project3@sha256:29e5b554ed25e861ff6d7874bc4229460735ae5085d5e4c8b070051aba9f661c
+        run: |
+          cosign verify --key cosign.pub "$DIGEST"
